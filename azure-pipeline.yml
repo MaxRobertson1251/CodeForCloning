@@ -1,0 +1,29 @@
+trigger:
+- main
+
+jobs:
+- job: BuildAndDeploy
+  pool:
+    vmImage: 'ubuntu-latest'  # Use the latest Ubuntu image
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.x'
+      addToPath: true
+
+  - script: |
+      echo "Building and pushing PHP application"
+      echo "<?php echo 'Hello World!'; ?>" > index.php
+      ls -al
+    displayName: 'Prepare PHP files'
+
+  - task: AzureWebApp@1
+    inputs:
+      azureSubscription: 'service-connection-for-test'  
+      appName: 'thmdevsecops-testapp'  
+      resourceGroupName: 'test-resources'  
+      region: 'uksouth'  
+      package: '$(Build.SourcesDirectory)'
+      publishProfile: $(System.DefaultWorkingDirectory)/publishprofile.pubxml
+    displayName: 'Deploy to App Service'
